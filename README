@@ -1,0 +1,10 @@
+
+
+To create a build environment for the beagle bone black (i.e. the am3358-evm), source the am335x-init-build-env like this:
+> source am335x-init-build-env
+
+This will create a build folder named "am335x-evm" in the same directory. The script will then change directory into that
+build folder with the build environment ready to build targets.
+
+Note that this environment is currently intended to support development on a beagle bone black SOC platform, or a qemuarm
+emulated environment. To build images for the qemuarm environment, precede the bitbake command with MACHINE="qemuarm".
