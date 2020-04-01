@@ -6,8 +6,8 @@ BBPATH = "${TOPDIR}"
 BBFILES ?= ""
 
 BBLAYERS ?= " \
-  ##BEAGLEROOT##/poky/meta \
-  ##BEAGLEROOT##/poky/meta-poky \
-  ##BEAGLEROOT##/poky/meta-yocto-bsp \
-  ##BEAGLEROOT##/meta-ti \
+  ##OEROOT##/../poky/meta \
+  ##OEROOT##/../poky/meta-poky \
+  ##OEROOT##/../poky/meta-yocto-bsp \
+  ##OEROOT##/../meta-ti \
   "
