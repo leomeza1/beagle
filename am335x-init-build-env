@@ -35,6 +35,12 @@ if [ -z "$BEAGLEROOT" ]; then
 fi
 unset THIS_SCRIPT
 
+if [ ! -e "$BEAGLEROOT/build" ]; then
+    echo "$BEAGLEROOT/build doesn't exist!" >&2
+    echo "Creating $BEAGLEROOT/build now." >&2
+    mkdir $BEAGLEROOT/build
+fi
+
 TEMPLATECONF="$BEAGLEROOT/meta-beagle/conf"
 
 export TEMPLATECONF
@@ -42,4 +48,4 @@ export BEAGLEROOT
 
 cd "$BEAGLEROOT/poky"
 
-.  oe-init-build-env "$BEAGLEROOT/am335x-evm"
+.  oe-init-build-env "$BEAGLEROOT/build/am335x-evm"

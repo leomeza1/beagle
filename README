@@ -1,4 +1,6 @@
-
+===============================================
+Booting Into the Bitbake Environment
+===============================================
 
 To create a build environment for the beagle bone black (i.e. the am3358-evm), source the am335x-init-build-env like this:
 > source am335x-init-build-env
@@ -7,4 +9,101 @@ This will create a build folder named "am335x-evm" in the same directory. The sc
 build folder with the build environment ready to build targets.
 
 Note that this environment is currently intended to support development on a beagle bone black SOC platform, or a qemuarm
-emulated environment. To build images for the qemuarm environment, precede the bitbake command with MACHINE="qemuarm".
+emulated environment.
+
+===============================================
+Copying Images to an SD Card
+===============================================
+
+Boot partition:
+---------------------
+sudo cp -v MLO /media/eol/BOOT/MLO
+sudo cp -v u-boot.img /media/eol/BOOT/u-boot.img
+
+Root partition:
+---------------------
+sudo tar -xf core-image-lsb-am335x-evm.tar.xz -C /media/eol/ROOT
+sudo tar zxvf modules--4.19.94+git0+5a23bc00e0-r22a-am335x-evm-20200427180437.tgz -C /media/eol/ROOT
+
+===============================================
+Setting Up Network Boot Using TFTP and NFS
+===============================================
+
+TFTP
+=============================
+todo
+
+ls -la /tftpboot/
+total 4180
+drwxrwxrwx  2 nobody root    4096 May  8 14:04 .
+drwxr-xr-x 27 root   root    4096 May  5 18:31 ..
+-rw-r--r--  1 root   root   36757 May  8 14:04 am335x-boneblack.dtb
+-rw-r--r--  1 root   root 4231680 May  8 14:03 zImage
+
+NFS
+=============================
+todo: Enable nfsroot capabilities in the kernel on the target, see https://github.com/torvalds/linux/blob/master/Documentation/admin-guide/nfs/nfsroot.rst
+todo: Setup an NFS server on the host (I'm using eth0, i.e. cpsw, on the beagle connected directly to a 2nd nic on my host) 
+
+Extract the root file system and kernel modules to the host:
+tar -xf core-image-lsb-am335x-evm.tar.xz -C /home/eol/nfsroot
+tar zxvf modules--4.19.94+git0+5a23bc00e0-r22a-am335x-evm-20200427180437.tgz -C /home/eol/nfsroot
+
+ls -la /home/eol/nfsroot/
+total 72
+drwxr-xr-x 18 eol  eol  4096 May  8 14:08 .
+drwxr-xr-x 28 eol  eol  4096 May  8 06:51 ..
+drwxr-xr-x  2 eol  eol  4096 May  6 20:18 bin
+drwxr-xr-x  2 eol  eol  4096 May  6 20:18 boot
+drwxr-xr-x  2 eol  eol  4096 Apr 27 11:20 dev
+drwxr-xr-x 57 eol  eol  4096 May  8 14:09 etc
+drwxr-xr-x  3 eol  eol  4096 May  6 20:18 home
+drwxr-xr-x  9 eol  eol  4096 May  6 20:17 lib
+drwxr-xr-x  2 eol  eol  4096 Apr 27 11:20 media
+drwxr-xr-x  3 eol  eol  4096 May  6 20:18 mnt
+drwxr-xr-x  3 eol  eol  4096 May  6 20:18 opt
+dr-xr-xr-x  2 eol  eol  4096 Apr 27 11:20 proc
+drwxr-xr-x  3 eol  eol  4096 May  8 14:08 run
+drwxr-xr-x  2 eol  eol  4096 May  6 20:18 sbin
+dr-xr-xr-x  2 eol  eol  4096 Apr 27 11:20 sys
+lrwxrwxrwx  1 root root    8 May  8 14:08 tmp -> /var/tmp
+drwxr-xr-x 11 eol  eol  4096 Apr 27 12:23 usr
+drwxr-xr-x 10 eol  eol  4096 Apr 27 12:40 var
+drwxr-xr-x  3 eol  eol  4096 May  6 20:18 www
+
+U-Boot Configuration
+=============================
+todo
+=> setenv ipaddr 192.168.1.2
+=> setenv serverip 192.168.1.1
+=> saveenv
+Saving Environment to FAT... OK
+=> setenv bootargs root=/dev/nfs rw ip=192.168.1.2 console=ttyS0,115200n8 nfsroot=192.168.1.1:/home/eol/nfsroot,nfsvers=3
+=> saveenv
+Saving Environment to FAT... OK
+=> tftp 0x81000000 zImage
+link up on port 0, speed 100, full duplex
+Using ethernet@4a100000 device
+TFTP from server 192.168.1.1; our IP address is 192.168.1.2
+Filename 'zImage'.
+Load address: 0x81000000
+Loading: #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #############################
+         5.3 MiB/s
+done
+Bytes transferred = 4231680 (409200 hex)
+=> tftp 0x82000000 am335x-boneblack.dtb
+link up on port 0, speed 100, full duplex
+Using ethernet@4a100000 device
+TFTP from server 192.168.1.1; our IP address is 192.168.1.2
+Filename 'am335x-boneblack.dtb'.
+Load address: 0x82000000
+Loading: ###
+         4.4 MiB/s
+done
+Bytes transferred = 36757 (8f95 hex)
+=> bootz 0x81000000 - 0x82000000
+
